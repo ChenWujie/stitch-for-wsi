@@ -175,17 +175,30 @@ public class MyApp {
         JLabel rLabel = new JLabel("重叠率:");
         JTextField rField = new JTextField("20", 5);
 
+        JLabel captureLabel = new JLabel("成像模式:");
         JRadioButton option1 = new JRadioButton("明场");
         JRadioButton option2 = new JRadioButton("其它");
+        JPanel radioPanel = new JPanel();
+        radioPanel.setLayout(new FlowLayout(FlowLayout.LEFT, 5, 0)); // 左对齐，水平间距 5px
+        radioPanel.add(option1);
+        radioPanel.add(option2);
 
-
-// 创建 ButtonGroup，把所有按钮放进去
         ButtonGroup group = new ButtonGroup();
         group.add(option1);
         group.add(option2);
-
-// 设置默认选中
         option1.setSelected(true);
+
+        JLabel formatLabel = new JLabel("保存格式:");
+        JRadioButton format1 = new JRadioButton("tif");
+        JRadioButton format2 = new JRadioButton("png");
+        JPanel formatPanel = new JPanel();
+        formatPanel.setLayout(new FlowLayout(FlowLayout.LEFT, 5, 0)); // 左对齐，水平间距 5px
+        ButtonGroup group2 = new ButtonGroup();
+        group2.add(format1);
+        group2.add(format2);
+        formatPanel.add(format1);
+        formatPanel.add(format2);
+        format1.setSelected(true);
 
 
         JButton runButton = new JButton("开始拼接");
@@ -198,6 +211,7 @@ public class MyApp {
             runButton.setEnabled(false); // 禁用按钮，避免重复点击
             outputArea.setText("运行中...\n");
             System.out.println("OpenCV loaded? " + Core.NATIVE_LIBRARY_NAME);
+            long start = System.currentTimeMillis();
 
             SwingWorker<Void, Void> worker = new SwingWorker<>() {
                 @Override
@@ -227,7 +241,10 @@ public class MyApp {
                         outputArea.append("保存的目录: " + savePath + "\n");
                         outputArea.append("参数: x=" + xNums + ", y=" + yNums + ", r=" + r + "\n");
 
-                        ImageStitching.process(xNums, yNums, mode, lrratio, upratio, folderPath, savePath, (current, total) -> SwingUtilities.invokeLater(() -> {
+                        boolean orb_dec = option1.isSelected();
+                        boolean save_format = format1.isSelected();
+
+                        ImageStitching.process(xNums, yNums, mode, orb_dec, lrratio, upratio, folderPath, savePath, save_format, (current, total) -> SwingUtilities.invokeLater(() -> {
                             ps.setText("计算中 " + current + "/" + total);
                             if(current == total) {
                                 String s = ps.getText();
@@ -245,7 +262,14 @@ public class MyApp {
                 protected void done() {
                     outputArea.append("运行结束！\n");
                     runButton.setText("开始拼接");
-                    ps.setText("");
+                    long duration = System.currentTimeMillis() - start; // 毫秒
+
+                    long seconds = duration / 1000 % 60;
+                    long minutes = duration / (1000 * 60) % 60;
+                    long hours   = duration / (1000 * 60 * 60);
+
+                    String readableTime = String.format("%02d:%02d:%02d", hours, minutes, seconds);
+                    ps.setText("融合完成，用时 " + readableTime);
                     runButton.setEnabled(true); // 恢复按钮
                 }
             };
@@ -272,14 +296,21 @@ public class MyApp {
         gbc.gridx = 1; gbc.gridy = 5; panel.add(selectedImageIndexLabel, gbc);
         gbc.gridx = 2; gbc.gridy = 5; panel.add(selectImageButton, gbc);
 
-        gbc.gridx = 0; gbc.gridy = 6; panel.add(option1, gbc);
-        gbc.gridx = 1; gbc.gridy = 6; panel.add(option2, gbc);
+        gbc.gridx = 0; gbc.gridy = 6; panel.add(captureLabel, gbc);
+        gbc.gridx = 1; gbc.gridy = 6; panel.add(radioPanel, gbc);
+//        gbc.gridx = 1; gbc.gridy = 6; panel.add(option1, gbc);
+//        gbc.gridx = 2; gbc.gridy = 6; panel.add(option2, gbc);
 
-        gbc.gridx = 0; gbc.gridy = 7; gbc.gridwidth = 3; panel.add(runButton, gbc);
+        gbc.gridx = 0; gbc.gridy = 7; panel.add(formatLabel, gbc);
+        gbc.gridx = 1; gbc.gridy = 7; panel.add(formatPanel, gbc);
+//        gbc.gridx = 1; gbc.gridy = 7; panel.add(format1, gbc);
+//        gbc.gridx = 2; gbc.gridy = 7; panel.add(format2, gbc);
 
-        gbc.gridx = 0; gbc.gridy = 8; gbc.gridwidth = 3; panel.add(ps, gbc);
+        gbc.gridx = 0; gbc.gridy = 8; gbc.gridwidth = 3; panel.add(runButton, gbc);
 
-        gbc.gridx = 0; gbc.gridy = 9; gbc.gridwidth = 3; panel.add(new JScrollPane(outputArea), gbc);
+        gbc.gridx = 0; gbc.gridy = 9; gbc.gridwidth = 3; panel.add(ps, gbc);
+
+        gbc.gridx = 0; gbc.gridy = 10; gbc.gridwidth = 3; panel.add(new JScrollPane(outputArea), gbc);
 
         frame.getContentPane().add(panel);
         frame.setVisible(true);

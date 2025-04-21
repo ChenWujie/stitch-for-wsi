@@ -818,8 +818,9 @@ public class ImageStitching {
         return result;
     }
 
-    public static void process(int xNums, int yNums, int mode, float lrratio, float upratio, String path, String save, ProgressListener listener) {
+    public static void process(int xNums, int yNums, int mode, boolean o, float lrratio, float upratio, String path, String save, boolean tif, ProgressListener listener) {
         progress = 0;
+        orb_dec = o;
         OffsetsAndWeights offsetsAndWeights = CalculateAllOffset(path, xNums, yNums, lrratio, upratio, mode, listener);
         List<PrimMaxSpanningTreeGUI.Edge> maxTree = CalculateRoad(offsetsAndWeights);
         MyPosition[][] absPosition = adjustOffsets(offsetsAndWeights.offsets, maxTree, yNums, xNums);
@@ -830,7 +831,12 @@ public class ImageStitching {
 //        String filename = save + "\\result_" + path.substring(path.length()-4) + ".png";
 //        Imgcodecs.imwrite(filename, result);
         String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss"));
-        String filename = save + "\\result_" + timestamp + ".png";
+        String filename = save + "\\result_" + timestamp;
+        if(tif) {
+            filename += ".tif";
+        }else {
+            filename += ".png";
+        }
 
         // 1. 确保路径存在
         File parent = new File(filename).getParentFile();
