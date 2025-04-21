@@ -192,6 +192,8 @@ public class MyApp {
         JTextArea outputArea = new JTextArea(6, 30);
         outputArea.setEditable(false);
 
+        JLabel ps = new JLabel("");
+
         runButton.addActionListener(e -> {
             runButton.setEnabled(false); // 禁用按钮，避免重复点击
             outputArea.setText("运行中...\n");
@@ -225,7 +227,13 @@ public class MyApp {
                         outputArea.append("保存的目录: " + savePath + "\n");
                         outputArea.append("参数: x=" + xNums + ", y=" + yNums + ", r=" + r + "\n");
 
-                        ImageStitching.process(xNums, yNums, mode, lrratio, upratio, folderPath, savePath);
+                        ImageStitching.process(xNums, yNums, mode, lrratio, upratio, folderPath, savePath, (current, total) -> SwingUtilities.invokeLater(() -> {
+                            ps.setText("计算中 " + current + "/" + total);
+                            if(current == total) {
+                                String s = ps.getText();
+                                ps.setText("计算完成，开始融合...");
+                            }
+                        }));
                     } catch (Exception ex) {
                         ex.printStackTrace();
                         SwingUtilities.invokeLater(() -> outputArea.append("运行异常: " + ex.getMessage() + "\n"));
@@ -237,6 +245,7 @@ public class MyApp {
                 protected void done() {
                     outputArea.append("运行结束！\n");
                     runButton.setText("开始拼接");
+                    ps.setText("");
                     runButton.setEnabled(true); // 恢复按钮
                 }
             };
@@ -267,7 +276,10 @@ public class MyApp {
         gbc.gridx = 1; gbc.gridy = 6; panel.add(option2, gbc);
 
         gbc.gridx = 0; gbc.gridy = 7; gbc.gridwidth = 3; panel.add(runButton, gbc);
-        gbc.gridx = 0; gbc.gridy = 8; gbc.gridwidth = 3; panel.add(new JScrollPane(outputArea), gbc);
+
+        gbc.gridx = 0; gbc.gridy = 8; gbc.gridwidth = 3; panel.add(ps, gbc);
+
+        gbc.gridx = 0; gbc.gridy = 9; gbc.gridwidth = 3; panel.add(new JScrollPane(outputArea), gbc);
 
         frame.getContentPane().add(panel);
         frame.setVisible(true);

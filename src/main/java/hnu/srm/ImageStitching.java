@@ -16,14 +16,13 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 
-
 public class ImageStitching {
     static { System.loadLibrary(Core.NATIVE_LIBRARY_NAME); }
     static boolean orb_dec = true;
     static double global_rmse = 0;
     static int rmse_num = 0;
 
-//    static HashMap<String, Double> brightness = new HashMap<>();
+    static int progress = 0;
 
     // 计算修正后图像之间的位移距离
     public static MyPosition CalculateOffset(Size size, int overlap, int dx, int dy, boolean lr) {
@@ -379,14 +378,19 @@ public class ImageStitching {
         return fileNames;
     }
 
-    public static OffsetsAndWeights CalculateAllOffset(String path, int xNums, int yNums, float lrratio, float upratio, int mode) {
+    public static OffsetsAndWeights CalculateAllOffset(String path, int xNums, int yNums, float lrratio, float upratio, int mode, ProgressListener listener) {
         String[][] fileNames = GetFileNames(path, xNums, yNums, mode);
 
         MyPosition[][][] offsets = new MyPosition[yNums][xNums][2];
         int[][][] weights = new int[yNums][xNums][2];
         for(int r = 0; r < yNums - 1; r++) {
             for(int c = 0; c < xNums - 1; c++) {
+                progress++;
                 System.out.println("计算第"+(r*xNums+c)+"张图像特征。。。");
+                // 每处理完一张图，通知监听器
+                if (listener != null) {
+                    listener.onProgress(progress, xNums*yNums);
+                }
                 PositionAndWeight p1 = Match(fileNames[r][c], fileNames[r][c+1], lrratio, true);
                 offsets[r][c][0] = p1.myPosition;
                 weights[r][c][0] = p1.weight;
@@ -405,6 +409,10 @@ public class ImageStitching {
         }
         //最后一行
         for(int c = 0; c < xNums-1; c++) {
+            progress++;
+            if (listener != null) {
+                listener.onProgress(progress, xNums*yNums);
+            }
             PositionAndWeight p2 = Match(fileNames[yNums-1][c], fileNames[yNums-1][c+1], lrratio, true);
             offsets[yNums-1][c][0] = p2.myPosition;
             weights[yNums-1][c][0] = p2.weight;
@@ -417,6 +425,10 @@ public class ImageStitching {
         }
         //最后一列
         for(int r = 0; r < yNums-1; r++) {
+            progress++;
+            if (listener != null) {
+                listener.onProgress(progress, xNums*yNums);
+            }
             PositionAndWeight p2 = Match(fileNames[r][xNums-1], fileNames[r+1][xNums-1], upratio, false);
             offsets[r][xNums-1][1] = p2.myPosition;
             weights[r][xNums-1][1] = p2.weight;
@@ -432,6 +444,10 @@ public class ImageStitching {
         offsets[yNums-1][xNums-1][1] = null;
         weights[yNums-1][xNums-1][0] = -1;
         weights[yNums-1][xNums-1][1] = -1;
+        progress++;
+        if (listener != null) {
+            listener.onProgress(progress, xNums*yNums);
+        }
 
         //处理匹配失败的图像对
         MyPosition[] meanPositionH = new MyPosition[yNums];
@@ -802,8 +818,9 @@ public class ImageStitching {
         return result;
     }
 
-    public static void process(int xNums, int yNums, int mode, float lrratio, float upratio, String path, String save) {
-        OffsetsAndWeights offsetsAndWeights = CalculateAllOffset(path, xNums, yNums, lrratio, upratio, mode);
+    public static void process(int xNums, int yNums, int mode, float lrratio, float upratio, String path, String save, ProgressListener listener) {
+        progress = 0;
+        OffsetsAndWeights offsetsAndWeights = CalculateAllOffset(path, xNums, yNums, lrratio, upratio, mode, listener);
         List<PrimMaxSpanningTreeGUI.Edge> maxTree = CalculateRoad(offsetsAndWeights);
         MyPosition[][] absPosition = adjustOffsets(offsetsAndWeights.offsets, maxTree, yNums, xNums);
         boolean fusion = true;
@@ -814,6 +831,25 @@ public class ImageStitching {
 //        Imgcodecs.imwrite(filename, result);
         String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss"));
         String filename = save + "\\result_" + timestamp + ".png";
+
+        // 1. 确保路径存在
+        File parent = new File(filename).getParentFile();
+        if (!parent.exists()) {
+            parent.mkdirs();
+        }
+
+// 2. 检查图像是否为空
+        if (result != null && !result.empty()) {
+            boolean success = Imgcodecs.imwrite(filename, result);
+            if (!success) {
+                System.err.println("❌ 图像保存失败！");
+            } else {
+                System.out.println("✅ 成功保存到: " + filename);
+            }
+        } else {
+            System.err.println("⚠️ 图像为空，无法保存！");
+        }
+
         Imgcodecs.imwrite(filename, result);
 
         System.out.println(result.size());
