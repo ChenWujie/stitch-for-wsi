@@ -154,9 +154,9 @@ public class MyApp {
             }
         });
 
-        JLabel xLabel = new JLabel("XNums:");
+        JLabel xLabel = new JLabel("XNums(每列图像数量):");
         JTextField xField = new JTextField("10", 5);
-        JLabel yLabel = new JLabel("YNums:");
+        JLabel yLabel = new JLabel("YNums(每行图像数量):");
         JTextField yField = new JTextField("10", 5);
 
         JLabel modeLabel = new JLabel("拼接路经:");
@@ -244,7 +244,7 @@ public class MyApp {
                         boolean orb_dec = option1.isSelected();
                         boolean save_format = format1.isSelected();
 
-                        ImageStitching.process(xNums, yNums, mode, orb_dec, lrratio, upratio, folderPath, savePath, save_format, (current, total) -> SwingUtilities.invokeLater(() -> {
+                        ImageStitching.process(yNums, xNums, mode, orb_dec, lrratio, upratio, folderPath, savePath, save_format, (current, total) -> SwingUtilities.invokeLater(() -> {
                             ps.setText("计算中 " + current + "/" + total);
                             if(current == total) {
                                 String s = ps.getText();
