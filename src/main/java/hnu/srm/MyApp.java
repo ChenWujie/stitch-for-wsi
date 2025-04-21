@@ -112,7 +112,7 @@ public class MyApp {
     private void createAndShowGUI() {
         JFrame frame = new JFrame("SRM Stitch Tool");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setSize(650, 550);
+        frame.setSize(650, 600);
         frame.setLocationRelativeTo(null); // 居中
         Image icon = Toolkit.getDefaultToolkit().getImage(MyApp.class.getResource("/icon.png"));
 
@@ -239,7 +239,6 @@ public class MyApp {
                         outputArea.setText("运行中...\n");
                         outputArea.append("拼接的目录: " + folderPath + "\n");
                         outputArea.append("保存的目录: " + savePath + "\n");
-                        outputArea.append("参数: x=" + xNums + ", y=" + yNums + ", r=" + r + "\n");
 
                         boolean orb_dec = option1.isSelected();
                         boolean save_format = format1.isSelected();
