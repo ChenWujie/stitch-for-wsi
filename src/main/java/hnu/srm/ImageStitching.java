@@ -1,20 +1,20 @@
 package hnu.srm;
 
+
 import org.opencv.core.*;
 import org.opencv.features2d.*;
-import org.opencv.highgui.HighGui;
 import org.opencv.imgcodecs.Imgcodecs;
-import org.opencv.imgproc.CLAHE;
 import org.opencv.imgproc.Imgproc;
 
 import javax.swing.*;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.ObjectOutputStream;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+
+
+
 
 public class ImageStitching {
     static { System.loadLibrary(Core.NATIVE_LIBRARY_NAME); }
@@ -767,42 +767,10 @@ public class ImageStitching {
         Mat result = new Mat(maxHeight, maxWidth, imgA.type(), Scalar.all(0));
         imgA.release();
 
-        //计算平均亮度
-//        double sumBrightness = 0.0;
-//        for(Double brights : brightness.values()) {
-//            sumBrightness += brights;
-//        }
-//        double targetBrightness = sumBrightness / (xNums * yNums);
-
-
         //遍历填入图像
         for(int r = 0; r < yNums; r++ ) {
             for(int c = 0; c < xNums; c++ ) {
                 Mat image = Imgcodecs.imread(fileNames[r][c], Imgcodecs.IMREAD_UNCHANGED);
-//                Mat img = new Mat();
-//                Imgproc.cvtColor(image, img, Imgproc.COLOR_BGR2HSV);
-////
-                // Apply the brightness adjustment
-//                double currentBri = calculateAverageBrightness(image);
-                // 调整亮度
-//                Mat adjustedImage = new Mat();
-//                image.convertTo(image, -1, targetBrightness/currentBri, 0);
-//                double normalized = (currentBri- minBrightness) / (maxBrightness - minBrightness);
-//                Mat adjustedImage = new Mat();
-//                if(currentBri > targetBrightness){
-//                    double scale = 1-Math.log1p((maxBrightness-currentBri)/(maxBrightness-minBrightness))*Math.sqrt(currentBri-targetBrightness)/currentBri;
-//                adjustBrightness(img, targetBrightness/currentBri);
-//                    adjustBrightness(img, targetBrightness / currentBri);
-//                    System.out.print(calculateAverageBrightness(img) + "\t\t");
-//                }
-//                else{
-//                    double scale = 1+Math.log1p((maxBrightness-currentBri)/(maxBrightness-minBrightness))*Math.sqrt(targetBrightness-currentBri)/currentBri;
-////                    adjustedImage = adjustBrightness(img, scale, (targetBrightness-currentBri)/(targetBrightness-minBrightness)*0);
-//                    adjustBrightness(img, targetBrightness / currentBri);
-//                    System.out.print(calculateAverageBrightness(img) + "\t\t");
-//                }
-//                Mat rgb = new Mat();
-//                Imgproc.cvtColor(img, rgb, Imgproc.COLOR_HSV2BGR);
                 Rect rect = new Rect(absPosition[r][c].x, absPosition[r][c].y, image.cols(), image.rows());
                 Mat roi = result.submat(rect);
                 if(fuse) image = Fusion2(roi, image);
@@ -818,7 +786,7 @@ public class ImageStitching {
         return result;
     }
 
-    public static void process(int xNums, int yNums, int mode, boolean o, float lrratio, float upratio, String path, String save, boolean tif, ProgressListener listener) {
+    public static void process(int xNums, int yNums, int mode, boolean o, float lrratio, float upratio, String path, String save, boolean tif, ProgressListener listener) throws Exception {
         progress = 0;
         orb_dec = o;
         OffsetsAndWeights offsetsAndWeights = CalculateAllOffset(path, xNums, yNums, lrratio, upratio, mode, listener);
@@ -846,19 +814,27 @@ public class ImageStitching {
 
 // 2. 检查图像是否为空
         if (result != null && !result.empty()) {
-            boolean success = Imgcodecs.imwrite(filename, result);
-            if (!success) {
-                System.err.println("❌ 图像保存失败！");
-            } else {
-                System.out.println("✅ 成功保存到: " + filename);
+            System.out.println("开始保存" + filename);
+            if(tif) {
+                TiffSaver.saveTiffInChunks(result, filename, 800);
+
+                System.out.println(result.size());
+                System.out.println("拼接结束，保存在" + filename);
+            }else {
+                {
+                    boolean success = Imgcodecs.imwrite(filename, result);
+                    if (!success) {
+                        System.err.println("❌ 图像保存失败！");
+                    } else {
+                        System.out.println("✅ 成功保存到: " + filename);
+                    }
+                }
             }
+            result.release();
         } else {
             System.err.println("⚠️ 图像为空，无法保存！");
         }
 
-        Imgcodecs.imwrite(filename, result);
 
-        System.out.println(result.size());
-        System.out.println("保存在" + filename);
     }
 }

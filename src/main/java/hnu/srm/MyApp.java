@@ -127,7 +127,7 @@ public class MyApp {
         gbc.fill = GridBagConstraints.HORIZONTAL;
 
         JLabel folderLabel = new JLabel("选择待拼接图像文件夹:");
-        JTextField folderField = new JTextField(20);
+        JTextField folderField = new JTextField("H:\\BaiduDownloads\\stick\\SP",20);
         JButton browseButton = new JButton("浏览");
 
         browseButton.addActionListener(e -> {
@@ -141,7 +141,7 @@ public class MyApp {
         });
 
         JLabel saveFolderLabel = new JLabel("选择保存路径:");
-        JTextField saveFolderField = new JTextField(20);
+        JTextField saveFolderField = new JTextField("J:\\test_te", 20);
         JButton saveButton = new JButton("浏览");
 
         saveButton.addActionListener(e -> {
@@ -176,8 +176,8 @@ public class MyApp {
         JTextField rField = new JTextField("20", 5);
 
         JLabel captureLabel = new JLabel("成像模式:");
-        JRadioButton option1 = new JRadioButton("明场");
-        JRadioButton option2 = new JRadioButton("其它");
+        JRadioButton option1 = new JRadioButton("明场(更快，占内存更少)");
+        JRadioButton option2 = new JRadioButton("其它(更精确，占内存更多)");
         JPanel radioPanel = new JPanel();
         radioPanel.setLayout(new FlowLayout(FlowLayout.LEFT, 5, 0)); // 左对齐，水平间距 5px
         radioPanel.add(option1);
@@ -270,6 +270,7 @@ public class MyApp {
                     String readableTime = String.format("%02d:%02d:%02d", hours, minutes, seconds);
                     ps.setText("融合完成，用时 " + readableTime);
                     runButton.setEnabled(true); // 恢复按钮
+                    System.gc();
                 }
             };
 

@@ -15,6 +15,22 @@
         <javafx.version>17.0.10</javafx.version> <!-- 可升级为最新版本 -->
     </properties>
 
+    <repositories>
+<!--        <repository>-->
+<!--            <id>scijava-public</id>-->
+<!--            <url>https://maven.scijava.org/content/groups/public</url>-->
+<!--        </repository>-->
+        <repository>
+            <id>central</id>
+            <url>https://repo.maven.apache.org/maven2</url>
+        </repository>
+        <repository>
+            <id>scijava-public</id>
+            <url>https://maven.scijava.org/content/groups/public</url>
+        </repository>
+    </repositories>
+
+
     <dependencies>
         <!-- No external dependencies needed for Swing -->
         <dependency>
@@ -24,7 +40,32 @@
             <scope>system</scope>
             <systemPath>H:\Downloads\opencv\build\java\opencv-490.jar</systemPath>
         </dependency>
-
+        <!-- ImageJ API (scijava dependencies) -->
+        <!-- https://mvnrepository.com/artifact/org.scijava/scijava-common -->
+        <dependency>
+            <groupId>org.scijava</groupId>
+            <artifactId>scijava-common</artifactId>
+            <version>2.97.0</version>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/net.imagej/ij -->
+        <dependency>
+            <groupId>net.imagej</groupId>
+            <artifactId>ij</artifactId>
+            <version>1.54p</version>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/net.imagej/imagej -->
+        <dependency>
+            <groupId>net.imagej</groupId>
+            <artifactId>imagej</artifactId>
+            <version>2.1.0</version>
+        </dependency>
+        <!-- TwelveMonkeys ImageIO plugin for better TIFF handling -->
+        <!-- https://mvnrepository.com/artifact/com.twelvemonkeys.imageio/imageio-tiff -->
+        <dependency>
+            <groupId>com.twelvemonkeys.imageio</groupId>
+            <artifactId>imageio-tiff</artifactId>
+            <version>3.10.0</version>
+        </dependency>
     </dependencies>
 
     <build>
