@@ -1,72 +1,93 @@
 package hnu.srm;
 
-import ij.ImagePlus;
-import ij.process.ImageProcessor;
-import ij.io.FileSaver;
-import ij.ImageStack;
-import org.opencv.core.Mat;
-import org.opencv.core.CvType;
-import org.opencv.core.Size;
-import java.awt.image.BufferedImage;
+import com.twelvemonkeys.imageio.plugins.tiff.TIFFImageWriteParam;
+import org.opencv.core.*;
+import org.opencv.imgcodecs.Imgcodecs;
+
+import javax.imageio.*;
+import javax.imageio.stream.ImageOutputStream;
+import java.awt.image.*;
+import java.io.File;
 import java.io.IOException;
+import java.util.Iterator;
 
 public class TiffSaver {
 
-    // 分块保存 TIFF 图像
-    public static void saveTiffInChunks(Mat largeMat, String outputPath, int blockSize) {
-        int rows = largeMat.rows();
-        int cols = largeMat.cols();
+    public static void saveMatInRowChunks(Mat mat, File file, int chunkHeight) throws IOException {
+        if (mat.empty()) {
+            throw new IllegalArgumentException("Input Mat is empty.");
+        }
 
-        try {
-            // 创建 ImageStack 来存放所有分块
-            ImageStack stack = new ImageStack(cols, blockSize);
+        Iterator<ImageWriter> writers = ImageIO.getImageWritersByFormatName("tiff");
+        if (!writers.hasNext()) {
+            throw new IllegalStateException("No TIFF ImageWriter found. Make sure TwelveMonkeys TIFF plugin is in the classpath.");
+        }
 
-            // 遍历每个图像块
-            for (int rowStart = 0; rowStart < rows; rowStart += blockSize) {
-                int rowEnd = Math.min(rowStart + blockSize, rows);
+        ImageWriter writer = writers.next();
+        ImageOutputStream ios = ImageIO.createImageOutputStream(file);
+        writer.setOutput(ios);
+        writer.prepareWriteSequence(null);
 
-                // 截取每个分块
-                Mat block = largeMat.submat(rowStart, rowEnd, 0, cols);
-                BufferedImage bufferedImage = matToBufferedImage(block);
+        int totalHeight = mat.rows();
+        int width = mat.cols();
 
-                // 将 BufferedImage 转换为 ImageProcessor
-                ImageProcessor ip = new ij.process.ColorProcessor(bufferedImage);
+        for (int y = 0; y < totalHeight; y += chunkHeight) {
+            int h = Math.min(chunkHeight, totalHeight - y);
+            Rect roi = new Rect(0, y, width, h);
+            Mat chunk = new Mat(mat, roi);
 
-                // 将 ImageProcessor 添加到 ImageStack 中
-                stack.addSlice("Slice " + rowStart, ip);
+            BufferedImage chunkImage = matToBufferedImage(chunk);
+
+            // 获取默认 WriteParam（TIFFImageWriteParam）
+            ImageWriteParam param = writer.getDefaultWriteParam();
+            if (param.canWriteCompressed()) {
+                param.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
+                param.setCompressionType("LZW");  // 可选: LZW, Deflate, JPEG, etc.
             }
 
-            // 最后将整个 ImageStack 保存为一个单独的 TIFF 文件
-            ImagePlus imp = new ImagePlus("", stack);
-            FileSaver saver = new FileSaver(imp);
-            saver.saveAsTiff(outputPath);  // 保存为单个 TIFF 文件
-
-            System.out.println("TIFF saved successfully");
-
-        } catch (Exception e) {
-            e.printStackTrace();
+            IIOImage iioImage = new IIOImage(chunkImage, null, null);
+            writer.writeToSequence(iioImage, param);
         }
+
+        writer.endWriteSequence();
+        ios.close();
+        writer.dispose();
     }
 
 
 
+    private static BufferedImage matToBufferedImage(Mat mat) {
+        if (!mat.isContinuous()) {
+            mat = mat.clone(); // 确保连续
+        }
 
-    // 将 Mat 转换为 BufferedImage
-    public static BufferedImage matToBufferedImage(Mat mat) {
         int width = mat.cols();
         int height = mat.rows();
-        BufferedImage bufferedImage = new BufferedImage(width, height, BufferedImage.TYPE_3BYTE_BGR);
+        int channels = mat.channels();
 
-        byte[] data = new byte[width * height * mat.channels()];
-        mat.get(0, 0, data);
-        bufferedImage.getRaster().setDataElements(0, 0, width, height, data);
+        long bufferSize = (long) channels * width * height;
+        if (bufferSize > Integer.MAX_VALUE) {
+            throw new IllegalArgumentException("Mat too large to convert to BufferedImage: " + bufferSize);
+        }
 
-        return bufferedImage;
+        int type;
+        if (channels == 1) {
+            type = BufferedImage.TYPE_BYTE_GRAY;
+        } else if (channels == 3) {
+            type = BufferedImage.TYPE_3BYTE_BGR;
+        } else {
+            throw new IllegalArgumentException("Unsupported number of channels: " + channels);
+        }
+
+        byte[] buffer = new byte[(int) bufferSize];
+        mat.get(0, 0, buffer);
+
+        BufferedImage image = new BufferedImage(width, height, type);
+        byte[] targetPixels = ((DataBufferByte) image.getRaster().getDataBuffer()).getData();
+        System.arraycopy(buffer, 0, targetPixels, 0, buffer.length);
+        return image;
     }
 
-    public static void main(String[] args) {
-        // 假设 largeMat 是你的超大 Mat 图像
-        Mat largeMat = new Mat(70000, 50000, CvType.CV_8UC3); // 示例，需根据你的数据来设置
-        saveTiffInChunks(largeMat, "output.tif", 1000);  // 每块高度为 1000
-    }
+
 }
+

@@ -40,32 +40,21 @@
             <scope>system</scope>
             <systemPath>H:\Downloads\opencv\build\java\opencv-490.jar</systemPath>
         </dependency>
-        <!-- ImageJ API (scijava dependencies) -->
-        <!-- https://mvnrepository.com/artifact/org.scijava/scijava-common -->
+
+
+        <!-- JAI ImageIO Core（包含 TIFF 支持） -->
         <dependency>
-            <groupId>org.scijava</groupId>
-            <artifactId>scijava-common</artifactId>
-            <version>2.97.0</version>
+            <groupId>com.github.jai-imageio</groupId>
+            <artifactId>jai-imageio-core</artifactId>
+            <version>1.4.0</version>
         </dependency>
-        <!-- https://mvnrepository.com/artifact/net.imagej/ij -->
-        <dependency>
-            <groupId>net.imagej</groupId>
-            <artifactId>ij</artifactId>
-            <version>1.54p</version>
-        </dependency>
-        <!-- https://mvnrepository.com/artifact/net.imagej/imagej -->
-        <dependency>
-            <groupId>net.imagej</groupId>
-            <artifactId>imagej</artifactId>
-            <version>2.1.0</version>
-        </dependency>
-        <!-- TwelveMonkeys ImageIO plugin for better TIFF handling -->
-        <!-- https://mvnrepository.com/artifact/com.twelvemonkeys.imageio/imageio-tiff -->
         <dependency>
             <groupId>com.twelvemonkeys.imageio</groupId>
             <artifactId>imageio-tiff</artifactId>
-            <version>3.10.0</version>
+            <version>3.10.1</version>
         </dependency>
+
+
     </dependencies>
 
     <build>
@@ -82,14 +71,13 @@
                         <configuration>
                             <transformers>
                                 <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-                                    <mainClass>hnu.srm.MyApp</mainClass> <!-- 替换为你的主类 -->
+                                    <mainClass>hnu.srm.MyApp</mainClass>
                                 </transformer>
                             </transformers>
                         </configuration>
                     </execution>
                 </executions>
             </plugin>
-
         </plugins>
     </build>
 

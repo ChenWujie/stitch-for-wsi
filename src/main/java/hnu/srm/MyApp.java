@@ -127,7 +127,7 @@ public class MyApp {
         gbc.fill = GridBagConstraints.HORIZONTAL;
 
         JLabel folderLabel = new JLabel("选择待拼接图像文件夹:");
-        JTextField folderField = new JTextField("H:\\BaiduDownloads\\stick\\SP",20);
+        JTextField folderField = new JTextField("",20);
         JButton browseButton = new JButton("浏览");
 
         browseButton.addActionListener(e -> {
@@ -141,7 +141,7 @@ public class MyApp {
         });
 
         JLabel saveFolderLabel = new JLabel("选择保存路径:");
-        JTextField saveFolderField = new JTextField("J:\\test_te", 20);
+        JTextField saveFolderField = new JTextField("", 20);
         JButton saveButton = new JButton("浏览");
 
         saveButton.addActionListener(e -> {
@@ -155,9 +155,9 @@ public class MyApp {
         });
 
         JLabel xLabel = new JLabel("XNums(每列图像数量):");
-        JTextField xField = new JTextField("10", 5);
+        JTextField xField = new JTextField("", 5);
         JLabel yLabel = new JLabel("YNums(每行图像数量):");
-        JTextField yField = new JTextField("10", 5);
+        JTextField yField = new JTextField("", 5);
 
         JLabel modeLabel = new JLabel("拼接路经:");
         JButton selectImageButton = new JButton("选择拼接路径");
@@ -199,7 +199,6 @@ public class MyApp {
         formatPanel.add(format1);
         formatPanel.add(format2);
         format1.setSelected(true);
-
 
         JButton runButton = new JButton("开始拼接");
         JTextArea outputArea = new JTextArea(6, 30);

@@ -29,6 +29,10 @@
   </build>
   <repositories>
     <repository>
+      <id>central</id>
+      <url>https://repo.maven.apache.org/maven2</url>
+    </repository>
+    <repository>
       <id>scijava-public</id>
       <url>https://maven.scijava.org/content/groups/public</url>
     </repository>

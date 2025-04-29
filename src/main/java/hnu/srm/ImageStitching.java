@@ -816,8 +816,7 @@ public class ImageStitching {
         if (result != null && !result.empty()) {
             System.out.println("开始保存" + filename);
             if(tif) {
-                TiffSaver.saveTiffInChunks(result, filename, 800);
-
+                TiffSaver.saveMatInRowChunks(result, new File(filename), 2000);
                 System.out.println(result.size());
                 System.out.println("拼接结束，保存在" + filename);
             }else {
