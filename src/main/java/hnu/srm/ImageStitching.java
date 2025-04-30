@@ -329,7 +329,7 @@ public class ImageStitching {
         String[][] fileNames = new String[yNums][xNums];
         switch (mode) {
             case 0:
-                //snake by row
+                //snake by row right down
                 for(int r = 0; r < yNums; r++) {
                     for(int c = 0; c < xNums; c++) {
                         if(r % 2 == 0)
@@ -340,7 +340,7 @@ public class ImageStitching {
                 }
                 break;
             case 1:
-                //row by row down
+                //row by row right down
                 for(int r = 0; r < yNums; r++) {
                     for(int c = 0; c < xNums; c++) {
                         fileNames[r][c] = path + "/" + fileList[r * xNums + c];
@@ -348,7 +348,7 @@ public class ImageStitching {
                 }
                 break;
             case 2:
-                //snake by column
+                //snake by column down right
                 for(int c = 0; c < xNums; c++) {
                     for(int r = 0; r < yNums; r++) {
                         if(c % 2 == 0)
@@ -359,7 +359,7 @@ public class ImageStitching {
                 }
                 break;
             case 3:
-                //row by row up
+                //row by row right up
                 for(int r = 0; r < yNums; r++) {
                     for(int c = 0; c < xNums; c++) {
                         fileNames[r][c] = path + "/" + fileList[(yNums-r-1)*xNums + c];
@@ -367,10 +367,56 @@ public class ImageStitching {
                 }
                 break;
             case 4:
-                //column by column right
+                //column by column down right
                 for(int r = 0; r < yNums; r++) {
                     for(int c = 0; c < xNums; c++) {
                         fileNames[r][c] = path + "/" + fileList[c*yNums+r];
+                    }
+                }
+                break;
+            case 5:
+                //snake by row left down
+                for(int r = 0; r < yNums; r++) {
+                    for(int c = 0; c < xNums; c++) {
+                        if(r % 2 == 0)
+                            fileNames[r][c] = path + "/" + fileList[(r + 1) * xNums - 1 - c];
+                        else
+                            fileNames[r][c] = path + "/" + fileList[r * xNums + c];
+                    }
+                }
+                break;
+            case 6:
+                //row by row left down
+                for(int r = 0; r < yNums; r++) {
+                    for(int c = 0; c < xNums; c++) {
+                        fileNames[r][c] = path + "/" + fileList[(r + 1) * xNums - 1 - c];
+                    }
+                }
+                break;
+            case 7:
+                //snake by column up right
+                for(int c = 0; c < xNums; c++) {
+                    for(int r = 0; r < yNums; r++) {
+                        if(c % 2 == 0)
+                            fileNames[r][c] = path + "/" + fileList[(c + 1) * yNums - 1 - r];
+                        else
+                            fileNames[r][c] = path + "/" + fileList[c * yNums + r];
+                    }
+                }
+                break;
+            case 8:
+                //row by row left up
+                for(int r = 0; r < yNums; r++) {
+                    for(int c = 0; c < xNums; c++) {
+                        fileNames[r][c] = path + "/" + fileList[(yNums - r) * xNums - 1 - c];
+                    }
+                }
+                break;
+            case 9:
+                //column by column down left
+                for(int c = 0; c < xNums; c++) {
+                    for(int r = 0; r < yNums; r++) {
+                        fileNames[r][c] = path + "/" + fileList[(xNums - c - 1) * yNums + r];
                     }
                 }
                 break;

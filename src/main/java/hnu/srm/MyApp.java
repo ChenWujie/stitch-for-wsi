@@ -12,12 +12,26 @@ import java.util.function.Consumer;
 class ImageSelectionDialog extends JDialog {
 
     static String[] imagePaths = {
-            "/snake by row.PNG",
-            "/row by row down.PNG",
-            "/snake by column.PNG",
-            "/row by row up.PNG",
-            "/column by column.PNG"
+            "/snake by row right down.PNG",
+            "/row by row right down.PNG",
+            "/snake by column down right.PNG",
+            "/row by row right up.PNG",
+            "/column by column down right.PNG",
+            "/snake by row left down.PNG",
+            "/row by row left down.PNG",
+            "/snake by column up right.PNG",
+            "/row by row left up.PNG",
+            "/column by column down left.PNG"
     };
+
+    public static String getFileNameWithoutExtension(String filePath) {
+        // 去掉路径前缀
+        String fileNameWithExtension = filePath.substring(1);
+        // 找到文件名和后缀的分隔点
+        int dotIndex = fileNameWithExtension.lastIndexOf('.');
+        // 提取文件名（不包含后缀）
+        return fileNameWithExtension.substring(0, dotIndex);
+    }
 
     public ImageSelectionDialog(JFrame parent, Consumer<Integer> onImageSelected) {
         super(parent, "选择拼接路经", true);
@@ -43,7 +57,7 @@ class ImageSelectionDialog extends JDialog {
             button.setContentAreaFilled(false);
             button.setFocusPainted(false);
             button.setOpaque(true);
-            button.setToolTipText("点击选择第 " + (i + 1) + " 张图像");
+            button.setToolTipText(getFileNameWithoutExtension(imagePaths[i]));
 
             // ⭐ 鼠标悬停时变暗一点
             button.addMouseListener(new MouseAdapter() {
@@ -166,9 +180,8 @@ public class MyApp {
         selectImageButton.addActionListener(e -> {
             new ImageSelectionDialog(frame, index -> {
                 mode = index;
-                String fileName = Paths.get(ImageSelectionDialog.imagePaths[index]).getFileName().toString(); // "row by row.png"
-                String nameWithoutExtension = fileName.replaceFirst("[.][^.]+$", ""); // 去除扩展名
-                selectedImageIndexLabel.setText(nameWithoutExtension);
+                String fileName = ImageSelectionDialog.getFileNameWithoutExtension(ImageSelectionDialog.imagePaths[index]);
+                selectedImageIndexLabel.setText(fileName);
             });
         });
 
@@ -271,7 +284,7 @@ public class MyApp {
                     long hours   = duration / (1000 * 60 * 60);
 
                     String readableTime = String.format("%02d:%02d:%02d", hours, minutes, seconds);
-                    ps.setText("拼接完成，用时 " + readableTime);
+                    ps.setText("拼接完成，用时 " + readableTime + "tif格式使用imageJ: Image -> Stacks -> Make Montage... 打开");
                     runButton.setEnabled(true); // 恢复按钮
                     System.gc();
                 }
