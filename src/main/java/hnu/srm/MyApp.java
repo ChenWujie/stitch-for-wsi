@@ -213,6 +213,7 @@ public class MyApp {
             long start = System.currentTimeMillis();
 
             SwingWorker<Void, Void> worker = new SwingWorker<>() {
+                String filename = "";
                 @Override
                 protected Void doInBackground() {
                     try {
@@ -236,17 +237,20 @@ public class MyApp {
                         float upratio = (float) r / 100;
 
                         outputArea.setText("运行中...\n");
-                        outputArea.append("拼接的目录: " + folderPath + "\n");
-                        outputArea.append("保存的目录: " + savePath + "\n");
+                        outputArea.append("拼接目录: " + folderPath + "\n");
+                        outputArea.append("保存位置: " + savePath + "\n");
 
                         boolean orb_dec = option1.isSelected();
                         boolean save_format = format1.isSelected();
 
-                        ImageStitching.process(yNums, xNums, mode, orb_dec, lrratio, upratio, folderPath, savePath, save_format, (current, total) -> SwingUtilities.invokeLater(() -> {
-                            ps.setText("计算中 " + current + "/" + total);
-                            if(current == total) {
+                        filename = ImageStitching.process(yNums, xNums, mode, orb_dec, lrratio, upratio, folderPath, savePath, save_format, (current, total) -> SwingUtilities.invokeLater(() -> {
+                            if(current < total) {
+                                ps.setText("计算中 " + current + "/" + total);
+                            }else if(current == total) {
                                 String s = ps.getText();
                                 ps.setText("计算完成，开始融合...");
+                            }else {
+                                ps.setText("融合结束，写入磁盘...");
                             }
                         }));
                     } catch (Exception ex) {
@@ -258,7 +262,7 @@ public class MyApp {
 
                 @Override
                 protected void done() {
-                    outputArea.append("运行结束！\n");
+                    outputArea.append("运行结束！\n文件名：" + filename);
                     runButton.setText("开始拼接");
                     long duration = System.currentTimeMillis() - start; // 毫秒
 
@@ -267,7 +271,7 @@ public class MyApp {
                     long hours   = duration / (1000 * 60 * 60);
 
                     String readableTime = String.format("%02d:%02d:%02d", hours, minutes, seconds);
-                    ps.setText("融合完成，用时 " + readableTime);
+                    ps.setText("拼接完成，用时 " + readableTime);
                     runButton.setEnabled(true); // 恢复按钮
                     System.gc();
                 }

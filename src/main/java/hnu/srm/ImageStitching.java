@@ -786,7 +786,7 @@ public class ImageStitching {
         return result;
     }
 
-    public static void process(int xNums, int yNums, int mode, boolean o, float lrratio, float upratio, String path, String save, boolean tif, ProgressListener listener) throws Exception {
+    public static String process(int xNums, int yNums, int mode, boolean o, float lrratio, float upratio, String path, String save, boolean tif, ProgressListener listener) throws Exception {
         progress = 0;
         orb_dec = o;
         OffsetsAndWeights offsetsAndWeights = CalculateAllOffset(path, xNums, yNums, lrratio, upratio, mode, listener);
@@ -799,7 +799,7 @@ public class ImageStitching {
 //        String filename = save + "\\result_" + path.substring(path.length()-4) + ".png";
 //        Imgcodecs.imwrite(filename, result);
         String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss"));
-        String filename = save + "\\result_" + timestamp;
+        String filename = save + "\\" + timestamp;
         if(tif) {
             filename += ".tif";
         }else {
@@ -815,6 +815,10 @@ public class ImageStitching {
 // 2. 检查图像是否为空
         if (result != null && !result.empty()) {
             System.out.println("开始保存" + filename);
+            progress++;
+            if (listener != null) {
+                listener.onProgress(progress, xNums*yNums);
+            }
             if(tif) {
                 TiffSaver.saveMatInRowChunks(result, new File(filename), 2000);
                 System.out.println(result.size());
@@ -833,7 +837,6 @@ public class ImageStitching {
         } else {
             System.err.println("⚠️ 图像为空，无法保存！");
         }
-
-
+        return filename;
     }
 }
