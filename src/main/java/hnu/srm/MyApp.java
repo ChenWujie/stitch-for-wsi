@@ -214,7 +214,7 @@ public class MyApp {
         format1.setSelected(true);
 
         JButton runButton = new JButton("开始拼接");
-        JTextArea outputArea = new JTextArea(6, 30);
+        JTextArea outputArea = new JTextArea(7, 30);
         outputArea.setEditable(false);
 
         JLabel ps = new JLabel("");
@@ -275,7 +275,7 @@ public class MyApp {
 
                 @Override
                 protected void done() {
-                    outputArea.append("运行结束！\n文件名：" + filename);
+                    outputArea.append("运行结束！\n文件名：" + filename + "\ntif格式使用imageJ: Image -> Stacks -> Make Montage... 打开");
                     runButton.setText("开始拼接");
                     long duration = System.currentTimeMillis() - start; // 毫秒
 
@@ -284,7 +284,7 @@ public class MyApp {
                     long hours   = duration / (1000 * 60 * 60);
 
                     String readableTime = String.format("%02d:%02d:%02d", hours, minutes, seconds);
-                    ps.setText("拼接完成，用时 " + readableTime + "tif格式使用imageJ: Image -> Stacks -> Make Montage... 打开");
+                    ps.setText("拼接完成，用时 " + readableTime);
                     runButton.setEnabled(true); // 恢复按钮
                     System.gc();
                 }
