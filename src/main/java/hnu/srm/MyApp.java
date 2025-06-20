@@ -190,11 +190,27 @@ public class MyApp {
         return memoryInfo;
     }
 
-    private String formatSize(long bytes) {
-        if (bytes < 1024) return bytes + " B";
-        int exp = (int) (Math.log(bytes) / Math.log(1024));
-        String pre = "KMGTPE".charAt(exp-1) + "B";
-        return String.format("%.2f %s", bytes / Math.pow(1024, exp), pre);
+    // 方法：在文件夹中查找第一张图片文件并返回其大小
+    public long findFirstImageFileSize(File folder) {
+        // 定义图片文件的扩展名
+        String[] imageExtensions = {"jpg", "jpeg", "png", "tif", "tiff", "bmp", "gif"};
+
+        // 获取文件夹中的所有文件
+        File[] files = folder.listFiles();
+
+        if (files != null) {
+            for (File file : files) {
+                // 检查文件是否是图片文件
+                for (String ext : imageExtensions) {
+                    if (file.getName().toLowerCase().endsWith("." + ext)) {
+                        // 返回第一张图片文件的大小
+                        return file.length() / 1024 / 1024;
+                    }
+                }
+            }
+        }
+        // 如果没有找到图片文件，返回-1
+        return -1;
     }
 
     private void createAndShowGUI() {
@@ -217,12 +233,26 @@ public class MyApp {
         JTextField folderField = new JTextField("",20);
         JButton browseButton = new JButton("浏览");
 
+        JTextArea outputArea = new JTextArea(7, 30);
+        outputArea.setEditable(false);
+
         browseButton.addActionListener(e -> {
             JFileChooser chooser = new JFileChooser();
             chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
             int result = chooser.showOpenDialog(frame);
             if (result == JFileChooser.APPROVE_OPTION) {
                 File selectedFolder = chooser.getSelectedFile();
+                long fileSize = findFirstImageFileSize(selectedFolder); // 查找第一张图片文件并获取大小
+                Map<String, String> memoryInfo = getWindowsMemoryInfo();
+                long total = parseMemorySize(memoryInfo.get("TotalPhysicalMemory"));
+                long avai = parseMemorySize(memoryInfo.get("AvailablePhysicalMemory"));
+                outputArea.setText("当前设备总内存" + total + "MB，可用内存" + avai + "MB。");
+
+                if (fileSize != -1) {
+                    outputArea.append("\n当前设备预计可拼接图像数量：" + (avai / fileSize));
+                } else {
+                    outputArea.setText("No image file found in the selected folder.");
+                }
                 folderField.setText(selectedFolder.getAbsolutePath());
             }
         });
@@ -287,20 +317,6 @@ public class MyApp {
         format1.setSelected(true);
 
         JButton runButton = new JButton("开始拼接");
-        JTextArea outputArea = new JTextArea(7, 30);
-        outputArea.setEditable(false);
-
-        Map<String, String> memoryInfo = getWindowsMemoryInfo();
-        long total = parseMemorySize(memoryInfo.get("TotalPhysicalMemory"));
-        long avai = parseMemorySize(memoryInfo.get("AvailablePhysicalMemory"));
-        long use = parseMemorySize(memoryInfo.get("MemoryUsagePercentage"));
-        outputArea.setText("当前设备总内存" + total + "MB，可用内存" + avai + "MB。");
-        if(total < 1024 * 16) {
-            outputArea.append("\t当前设备内存过小，建议拼接低分辨率图像");
-        }
-        if(avai < 1024 * 8) {
-            outputArea.append("\t可用内存太少，可能导致拼接失败");
-        }
 
 
         JLabel ps = new JLabel("");
