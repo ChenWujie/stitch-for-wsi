@@ -32,3 +32,7 @@ root:
 ├─src...
 ```
 
+Windows系统完整可直接运行软件：
+通过网盘分享的文件：stitch.zip
+链接: https://pan.baidu.com/s/1tk_EL2uEo7k14YmZYySkhg?pwd=yyds 提取码: yyds
+--来自百度网盘超级会员v10的分享
