@@ -204,7 +204,7 @@ public class MyApp {
                 for (String ext : imageExtensions) {
                     if (file.getName().toLowerCase().endsWith("." + ext)) {
                         // 返回第一张图片文件的大小
-                        return file.length() / 1024 / 1024;
+                        return file.length();
                     }
                 }
             }
@@ -249,7 +249,7 @@ public class MyApp {
                 outputArea.setText("当前设备总内存" + total + "MB，可用内存" + avai + "MB。");
 
                 if (fileSize != -1) {
-                    outputArea.append("\n当前设备预计可拼接图像数量：" + (avai / fileSize));
+                    outputArea.append("\n当前设备预计可拼接图像数量：" + (avai * 1024 * 1024 / fileSize));
                 } else {
                     outputArea.setText("No image file found in the selected folder.");
                 }
