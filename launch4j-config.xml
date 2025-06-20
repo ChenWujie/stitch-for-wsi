@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <launch4jConfig>
   <dontWrapJar>false</dontWrapJar>
-  <headerType>console</headerType>
+  <headerType>gui</headerType>
   <jar>E:\java\SRMStitching\target\my-stitch-app-1.0-SNAPSHOT.jar</jar>
   <outfile>J:\cwj\mystitch.exe</outfile>
   <errTitle>Stitch App Error</errTitle>

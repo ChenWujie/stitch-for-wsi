@@ -5,8 +5,13 @@ import org.opencv.core.Core;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.nio.file.Paths;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.function.Consumer;
 
 class ImageSelectionDialog extends JDialog {
@@ -117,10 +122,79 @@ public class MyApp {
 
     public static void main(String[] args) {
         System.load(new File("opencv_java490.dll").getAbsolutePath());
+//        Map<String, String> memoryInfo = getWindowsMemoryInfo();
+//        System.out.println("总物理内存: " + parseMemorySize(memoryInfo.get("TotalPhysicalMemory")));
+//        System.out.println("可用物理内存: " + memoryInfo.get("AvailablePhysicalMemory"));
+//        System.out.println("内存使用率: " + memoryInfo.get("MemoryUsagePercentage") + "%");
 
         SwingUtilities.invokeLater(() -> {
             new MyApp().createAndShowGUI(); // 非静态方法中用 getClass().getResource(...) 就没问题了
         });
+    }
+
+    private long parseMemorySize(String memoryStr) {
+        // 从"XX MB"格式的字符串中提取数值部分
+        return Long.parseLong(memoryStr.replaceAll("[^0-9]", ""));
+    }
+
+    public Map<String, String> getWindowsMemoryInfo() {
+        Map<String, String> memoryInfo = new HashMap<>();
+        Process process = null;
+        BufferedReader reader = null;
+
+        try {
+            // 执行wmic命令获取内存信息
+            process = Runtime.getRuntime().exec("wmic OS get FreePhysicalMemory,TotalVisibleMemorySize /Format:list");
+            reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+
+            String line;
+            long totalMemory = 0;
+            long freeMemory = 0;
+
+            while ((line = reader.readLine()) != null) {
+                line = line.trim();
+                if (line.startsWith("TotalVisibleMemorySize=")) {
+                    totalMemory = Long.parseLong(line.substring("TotalVisibleMemorySize=".length()));
+                } else if (line.startsWith("FreePhysicalMemory=")) {
+                    freeMemory = Long.parseLong(line.substring("FreePhysicalMemory=".length()));
+                }
+            }
+
+            // 转换为MB
+            long totalMemoryMB = totalMemory / 1024;
+            long freeMemoryMB = freeMemory / 1024;
+            long usedMemoryMB = totalMemoryMB - freeMemoryMB;
+            double usagePercentage = (double) usedMemoryMB / totalMemoryMB * 100;
+
+            memoryInfo.put("TotalPhysicalMemory", totalMemoryMB + " MB");
+            memoryInfo.put("AvailablePhysicalMemory", freeMemoryMB + " MB");
+            memoryInfo.put("UsedPhysicalMemory", usedMemoryMB + " MB");
+            memoryInfo.put("MemoryUsagePercentage", String.format("%.2f", usagePercentage));
+
+        } catch (IOException | NumberFormatException e) {
+            System.err.println("获取内存信息失败: " + e.getMessage());
+        } finally {
+            // 关闭资源
+            if (reader != null) {
+                try {
+                    reader.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+            if (process != null) {
+                process.destroy();
+            }
+        }
+
+        return memoryInfo;
+    }
+
+    private String formatSize(long bytes) {
+        if (bytes < 1024) return bytes + " B";
+        int exp = (int) (Math.log(bytes) / Math.log(1024));
+        String pre = "KMGTPE".charAt(exp-1) + "B";
+        return String.format("%.2f %s", bytes / Math.pow(1024, exp), pre);
     }
 
     private void createAndShowGUI() {
@@ -129,7 +203,6 @@ public class MyApp {
         frame.setSize(650, 600);
         frame.setLocationRelativeTo(null); // 居中
         Image icon = Toolkit.getDefaultToolkit().getImage(MyApp.class.getResource("/icon.png"));
-
 
         frame.setIconImage(icon);
 
@@ -216,6 +289,19 @@ public class MyApp {
         JButton runButton = new JButton("开始拼接");
         JTextArea outputArea = new JTextArea(7, 30);
         outputArea.setEditable(false);
+
+        Map<String, String> memoryInfo = getWindowsMemoryInfo();
+        long total = parseMemorySize(memoryInfo.get("TotalPhysicalMemory"));
+        long avai = parseMemorySize(memoryInfo.get("AvailablePhysicalMemory"));
+        long use = parseMemorySize(memoryInfo.get("MemoryUsagePercentage"));
+        outputArea.setText("当前设备总内存" + total + "MB，可用内存" + avai + "MB。");
+        if(total < 1024 * 16) {
+            outputArea.append("\t当前设备内存过小，建议拼接低分辨率图像");
+        }
+        if(avai < 1024 * 8) {
+            outputArea.append("\t可用内存太少，可能导致拼接失败");
+        }
+
 
         JLabel ps = new JLabel("");
 
